@@ -1,2 +1,3 @@
 cockroach-data
 .idea
+templates/*.qtpl.go
