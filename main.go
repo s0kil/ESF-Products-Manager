@@ -27,8 +27,6 @@ type Product struct {
 }
 
 func main() {
-	var products []Product
-
 	var (
 		DbHost   = os.Getenv("DB_HOST")
 		DbName   = os.Getenv("DB_NAME")
@@ -41,7 +39,7 @@ func main() {
 	View := jet.NewHTMLSet("./views")
 	View.SetDevelopmentMode(!AppProductionMode)
 
-	_ = func() (r *sql.DB) {
+	DB := func() (r *sql.DB) {
 		r, e := sql.Open("postgres", DbSource)
 		fault(e, "Database Connection Error")
 		return
@@ -65,6 +63,17 @@ func main() {
 		view, e := View.GetTemplate(templateName)
 		fault(e, fmt.Sprintf("Failed To Get %s Template", templateName))
 
+		var products []Product
+		rows, e := DB.Query("SELECT title FROM products")
+		fault(e, "Failed To Select Products From DB")
+
+		for rows.Next() {
+			var productTitle string
+			e = rows.Scan(&productTitle)
+			fault(e, "Failed To Scan Product")
+			products = append(products, Product{Title: productTitle})
+		}
+
 		var writer bytes.Buffer
 		vars := make(jet.VarMap)
 		vars.Set("products", &[]Product{})
@@ -83,15 +92,16 @@ func main() {
 		e := c.BodyParser(&product)
 		fault(e, "Failed To Parse Form Body")
 
-		// Temp Store In Memory
-		products = append(products, product)
+		_, e = DB.Exec(fmt.Sprintf("INSERT INTO products (title) VALUES ('%s')", product.Title))
+		fault(e, "Failed To Insert Product Into DB")
 
 		// TODO: Info Flash With Status (Success, Failure)
 		c.Redirect("/product/new")
 	})
 
 	fmt.Println("Launching Server")
-	app.Listen(os.Getenv("APP_PORT"))
+	e := app.Listen(os.Getenv("APP_PORT"))
+	fault(e, "Failed To Start Server")
 }
 
 func renderView(View *jet.Set, templateName string) *bytes.Buffer {
