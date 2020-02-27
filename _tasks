@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Export Environment Variables From .env File
+source .env
+
+# Print Each Command Being Executed
+set -ex
+
+function launch_setup() {
+  # golang-migrate/migrate
+  go get -tags 'cockroachdb' -u github.com/golang-migrate/migrate/cmd/migrate
+
+  # valyala/quicktemplate
+  go get -u github.com/valyala/quicktemplate
+  go get -u github.com/valyala/quicktemplate/qtc
+
+  # gofiber/fiber
+  go get github.com/gofiber/fiber
+}
+
+function launch_cockroachdb() {
+  cockroach start-single-node --listen-addr="$DB_HOST" --http-addr=localhost:9000 --insecure --background
+}
+
+function do_migrate() {
+  user_params=$*
+  COCKROACHDB_URL="cockroachdb://$DB_USER:@$DB_HOST/$DB_NAME?sslmode=disable"
+
+  migrate -verbose -database "${COCKROACHDB_URL}" -path db/migrations "$user_params"
+
+  # Dump Database Schema (DO NOT EDIT THE schema.sql FILE)
+  cockroach dump "$DB_NAME" --insecure &>db/schema.sql
+}
+
+function run() {
+  # Remove Compiled Templates
+  rm templates/*.qtpl.go
+  # Compile quicktemplate Templates
+  go generate
+
+  # Start Application
+  go run main.go
+}
+
+# Allow User To Call Functions
+"$@"
