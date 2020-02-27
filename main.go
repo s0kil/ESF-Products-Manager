@@ -21,6 +21,10 @@ func init() {
 	fault(e, "Failed To Load .env File")
 }
 
+type Product struct {
+	Title string `form:"title"`
+}
+
 func main() {
 	var (
 		DbHost   = os.Getenv("DB_HOST")
@@ -74,6 +78,17 @@ func main() {
 	// Product Create
 	productEndPoint.Get("/new", func(c *fiber.Ctx) {
 		c.Send(renderView(View, "product/new.jet", nil))
+	})
+	productEndPoint.Post("/new", func(c *fiber.Ctx) {
+		// Parse Form
+		var product Product
+		e := c.BodyParser(&product)
+		fault(e, "Failed To Parse Form Body")
+
+		fmt.Println(product.Title)
+
+		// TODO: Info Flash With Status (Success, Failure)
+		c.Redirect("/product/new")
 	})
 
 	fmt.Println("Launching Server")

@@ -12,7 +12,7 @@
     <title>ESF Products Manager</title>
 </head>
 
-<body class="m2 bg-silver">
+<body class="max-width-3 mx-auto m2 bg-silver">
     <nav class="border-bottom">
         <ul class="list-reset">
             <li class="inline-block mr1"><a class="h4 black" href="/">Home</a></li>
@@ -21,7 +21,7 @@
         </ul>
     </nav>
 
-    <main>
+    <main class="max-width-2 mx-auto">
         {{yield body()}}
     </main>
 </body>

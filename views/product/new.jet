@@ -1,5 +1,17 @@
 {{extends "layouts/application.jet"}}
 
 {{block body()}}
-    <h1>Product Create</h1>
+    <form action="/product/new" method="post" class="mt4">
+
+        <div class="clearfix">
+            <label>
+                Product Title
+                <input name="title" type="text" placeholder="Title" class="block p1 col col-12">
+            </label>
+        </div>
+
+        <div class="border-bottom mt1 mb1"></div>
+
+        <input type="submit" value="Create">
+    </form>
 {{end}}
