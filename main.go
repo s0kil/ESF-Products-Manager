@@ -16,12 +16,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func fault(err error, reason string) {
-	if err != nil {
-		log.Fatal(reason, err)
-	}
-}
-
 func init() {
 	e := godotenv.Load()
 	fault(e, "Failed To Load .env File")
@@ -69,18 +63,27 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) {
 		c.Set("Content-Type", "text/html")
-
-		view, e := View.GetTemplate("home.jet")
-		fault(e, "Failed To Get home.jet Template")
-
-		var writer bytes.Buffer
-		vars := make(jet.VarMap)
-		e = view.Execute(&writer, vars, nil)
-		fault(e, "Error when executing home.jet template")
-
-		c.Send(&writer)
+		c.Send(renderView(View, "home.jet"))
 	})
 
 	fmt.Println("Launching Server")
 	app.Listen(os.Getenv("APP_PORT"))
+}
+
+func renderView(View *jet.Set, templateName string) *bytes.Buffer {
+	view, e := View.GetTemplate(templateName)
+	fault(e, fmt.Sprintf("Failed To Get %s Template", templateName))
+
+	var writer bytes.Buffer
+	vars := make(jet.VarMap)
+	e = view.Execute(&writer, vars, nil)
+	fault(e, fmt.Sprintf("Error When Executing %s Template", templateName))
+
+	return &writer
+}
+
+func fault(err error, reason string) {
+	if err != nil {
+		log.Fatal(reason, err)
+	}
 }
