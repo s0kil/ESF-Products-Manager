@@ -1,5 +1,5 @@
 {{extends "layouts/application.jet"}}
 
 {{block body()}}
-    <h1>Home Page</h1>
+    <h1>Product List All</h1>
 {{end}}

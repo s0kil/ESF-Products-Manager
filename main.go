@@ -21,11 +21,6 @@ func init() {
 	fault(e, "Failed To Load .env File")
 }
 
-type Product struct {
-	ID    int `gorm:"primary_key"`
-	Title string
-}
-
 func main() {
 	var (
 		DbHost   = os.Getenv("DB_HOST")
@@ -35,6 +30,7 @@ func main() {
 	)
 
 	View := jet.NewHTMLSet("./views")
+	View.SetDevelopmentMode(true) // TODO: Read ENV
 
 	DB := func() (r *sql.DB) {
 		r, e := sql.Open("postgres", DbSource)
@@ -60,23 +56,37 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) {
+		c.Set("Content-Type", "text/html")
+		c.Next()
+	})
 
 	app.Get("/", func(c *fiber.Ctx) {
-		c.Set("Content-Type", "text/html")
-		c.Send(renderView(View, "home.jet"))
+		c.Send(renderView(View, "home.jet", nil))
+	})
+
+	// Product
+	productEndPoint := app.Group("/product")
+	// Product List All
+	productEndPoint.Get("/", func(c *fiber.Ctx) {
+		c.Send(renderView(View, "product/index.jet", nil))
+	})
+	// Product Create
+	productEndPoint.Get("/new", func(c *fiber.Ctx) {
+		c.Send(renderView(View, "product/new.jet", nil))
 	})
 
 	fmt.Println("Launching Server")
 	app.Listen(os.Getenv("APP_PORT"))
 }
 
-func renderView(View *jet.Set, templateName string) *bytes.Buffer {
+func renderView(View *jet.Set, templateName string, templateData interface{}) *bytes.Buffer {
 	view, e := View.GetTemplate(templateName)
 	fault(e, fmt.Sprintf("Failed To Get %s Template", templateName))
 
 	var writer bytes.Buffer
 	vars := make(jet.VarMap)
-	e = view.Execute(&writer, vars, nil)
+	e = view.Execute(&writer, vars, templateData)
 	fault(e, fmt.Sprintf("Error When Executing %s Template", templateName))
 
 	return &writer
