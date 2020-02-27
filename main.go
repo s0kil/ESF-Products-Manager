@@ -4,12 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"os"
 
-	"./templates"
-
+	"github.com/CloudyKit/jet"
 	"github.com/gofiber/fiber"
 	"github.com/joho/godotenv"
 	"github.com/labstack/gommon/log"
@@ -40,14 +40,16 @@ func main() {
 		DbSource = fmt.Sprintf("postgresql://%s@%s/%s?sslmode=disable", DbUser, DbHost, DbName)
 	)
 
-	db := func() (r *sql.DB) {
+	View := jet.NewHTMLSet("./views")
+
+	DB := func() (r *sql.DB) {
 		r, e := sql.Open("postgres", DbSource)
 		fault(e, "Database Connection Error")
 		return
 	}()
 
 	rows := func() (r *sql.Rows) {
-		r, e := db.Query("SELECT id, title FROM products")
+		r, e := DB.Query("SELECT id, title FROM products")
 		fault(e, "Database Query Failed")
 		defer r.Close()
 		return
@@ -67,7 +69,16 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) {
 		c.Set("Content-Type", "text/html")
-		c.SendString(templates.Hello("Hello, World!"))
+
+		view, e := View.GetTemplate("home.jet")
+		fault(e, "Failed To Get home.jet Template")
+
+		var writer bytes.Buffer
+		vars := make(jet.VarMap)
+		e = view.Execute(&writer, vars, nil)
+		fault(e, "Error when executing home.jet template")
+
+		c.Send(&writer)
 	})
 
 	fmt.Println("Launching Server")

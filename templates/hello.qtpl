@@ -1,3 +1,0 @@
-{% func Hello(name string) %}
-	{%s name %}!
-{% endfunc %}

@@ -10,12 +10,11 @@ function launch_setup() {
   # golang-migrate/migrate
   go get -tags 'cockroachdb' -u github.com/golang-migrate/migrate/cmd/migrate
 
-  # valyala/quicktemplate
-  go get -u github.com/valyala/quicktemplate
-  go get -u github.com/valyala/quicktemplate/qtc
-
   # gofiber/fiber
   go get github.com/gofiber/fiber
+
+  # CloudyKit/jet
+  go get -u github.com/CloudyKit/jet
 }
 
 function launch_cockroachdb() {
@@ -33,11 +32,6 @@ function do_migrate() {
 }
 
 function run() {
-  # Remove Compiled Templates
-  rm templates/*.qtpl.go
-  # Compile quicktemplate Templates
-  go generate
-
   # Start Application
   go run main.go
 }
