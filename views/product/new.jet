@@ -1,7 +1,9 @@
 {{extends "layouts/application.jet"}}
 
 {{block body()}}
-    <form action="/product/new" method="post" class="mt4">
+    <h1 class="gray">Product Create</h1>
+
+    <form action="/product/new" method="post">
 
         <div class="clearfix">
             <label>

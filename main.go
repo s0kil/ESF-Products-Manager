@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/CloudyKit/jet"
 	"github.com/gofiber/fiber"
@@ -26,38 +27,25 @@ type Product struct {
 }
 
 func main() {
+	var products []Product
+
 	var (
 		DbHost   = os.Getenv("DB_HOST")
 		DbName   = os.Getenv("DB_NAME")
 		DbUser   = os.Getenv("DB_USER")
 		DbSource = fmt.Sprintf("postgresql://%s@%s/%s?sslmode=disable", DbUser, DbHost, DbName)
+
+		AppProductionMode, _ = strconv.ParseBool(os.Getenv("APP_PRODUCTION_MODE"))
 	)
 
 	View := jet.NewHTMLSet("./views")
-	View.SetDevelopmentMode(true) // TODO: Read ENV
+	View.SetDevelopmentMode(!AppProductionMode)
 
-	DB := func() (r *sql.DB) {
+	_ = func() (r *sql.DB) {
 		r, e := sql.Open("postgres", DbSource)
 		fault(e, "Database Connection Error")
 		return
 	}()
-
-	rows := func() (r *sql.Rows) {
-		r, e := DB.Query("SELECT id, title FROM products")
-		fault(e, "Database Query Failed")
-		defer r.Close()
-		return
-	}()
-
-	for rows.Next() {
-		var id int
-		var title string
-
-		e := rows.Scan(&id, &title)
-		fault(e, "DB rows.Scan Failed")
-
-		fmt.Printf("%d %s\n", id, title)
-	}
 
 	app := fiber.New()
 	app.Use(func(c *fiber.Ctx) {
@@ -66,18 +54,28 @@ func main() {
 	})
 
 	app.Get("/", func(c *fiber.Ctx) {
-		c.Send(renderView(View, "home.jet", nil))
+		c.Send(renderView(View, "home.jet"))
 	})
 
 	// Product
 	productEndPoint := app.Group("/product")
 	// Product List All
 	productEndPoint.Get("/", func(c *fiber.Ctx) {
-		c.Send(renderView(View, "product/index.jet", nil))
+		templateName := "product/index.jet"
+		view, e := View.GetTemplate(templateName)
+		fault(e, fmt.Sprintf("Failed To Get %s Template", templateName))
+
+		var writer bytes.Buffer
+		vars := make(jet.VarMap)
+		vars.Set("products", &[]Product{})
+		e = view.Execute(&writer, vars, products)
+		fault(e, fmt.Sprintf("Error When Executing %s Template", templateName))
+
+		c.Send(&writer)
 	})
 	// Product Create
 	productEndPoint.Get("/new", func(c *fiber.Ctx) {
-		c.Send(renderView(View, "product/new.jet", nil))
+		c.Send(renderView(View, "product/new.jet"))
 	})
 	productEndPoint.Post("/new", func(c *fiber.Ctx) {
 		// Parse Form
@@ -85,7 +83,8 @@ func main() {
 		e := c.BodyParser(&product)
 		fault(e, "Failed To Parse Form Body")
 
-		fmt.Println(product.Title)
+		// Temp Store In Memory
+		products = append(products, product)
 
 		// TODO: Info Flash With Status (Success, Failure)
 		c.Redirect("/product/new")
@@ -95,13 +94,12 @@ func main() {
 	app.Listen(os.Getenv("APP_PORT"))
 }
 
-func renderView(View *jet.Set, templateName string, templateData interface{}) *bytes.Buffer {
+func renderView(View *jet.Set, templateName string) *bytes.Buffer {
 	view, e := View.GetTemplate(templateName)
 	fault(e, fmt.Sprintf("Failed To Get %s Template", templateName))
 
 	var writer bytes.Buffer
-	vars := make(jet.VarMap)
-	e = view.Execute(&writer, vars, templateData)
+	e = view.Execute(&writer, nil, nil)
 	fault(e, fmt.Sprintf("Error When Executing %s Template", templateName))
 
 	return &writer
