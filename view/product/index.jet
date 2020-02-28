@@ -1,0 +1,26 @@
+{{extends "layouts/application.jet"}}
+
+{{block body()}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fluid-table@0.0.2/fluid-table.min.css">
+
+    <h1 class="gray">Product List All</h1>
+
+    <div id="products-container">
+        <table class="fluid-table">
+            <thead>
+                <tr class="left-align">
+                    <th>ID</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range product := .}}
+                    <tr>
+                        <td>{{product.ID}}</td>
+                        <td>{{product.Title}}</td>
+                    </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+{{end}}

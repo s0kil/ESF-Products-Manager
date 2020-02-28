@@ -6,17 +6,6 @@ source .env
 # Print Each Command Being Executed
 set -ex
 
-function launch_setup() {
-  # golang-migrate/migrate
-  go get -tags 'cockroachdb' -u github.com/golang-migrate/migrate/cmd/migrate
-
-  # gofiber/fiber
-  go get github.com/gofiber/fiber
-
-  # CloudyKit/jet
-  go get -u github.com/CloudyKit/jet
-}
-
 function launch_cockroachdb() {
   cockroach start-single-node --listen-addr="$DB_HOST" --http-addr=localhost:9000 --insecure --background
 }
@@ -25,15 +14,21 @@ function do_migrate() {
   user_params=$*
   COCKROACHDB_URL="cockroachdb://$DB_USER:@$DB_HOST/$DB_NAME?sslmode=disable"
 
-  migrate -verbose -database "${COCKROACHDB_URL}" -path db/migrations "$user_params"
+  migrate -verbose -database "${COCKROACHDB_URL}" -path database/migrations "$user_params"
 
-  # Dump Database Schema (DO NOT EDIT THE schema.sql FILE)
-  cockroach dump "$DB_NAME" --insecure &>db/schema.sql
+  # Dump Database Schema (*DO NOT EDIT THE database/schema.sql FILE*)
+  cockroach dump "$DB_NAME" --insecure &>database/schema.sql
 }
 
 function run() {
   # Start Application
-  go run main.go
+  go run application.go
+}
+
+function build() {
+  mkdir -p bin/
+  # Build Application
+  go build -o bin/
 }
 
 # Allow User To Call Functions

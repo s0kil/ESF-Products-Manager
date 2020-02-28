@@ -1,9 +1,0 @@
-{{extends "layouts/application.jet"}}
-
-{{block body()}}
-    <h1 class="gray">Product List All</h1>
-
-    {{range product := .}}
-        <p>{{product.Title}}</p>
-    {{end}}
-{{end}}
