@@ -6,6 +6,11 @@ source .env
 # Print Each Command Being Executed
 set -ex
 
+function launch_setup() {
+  # Database Migrations
+  go get -tags 'cockroachdb' -u github.com/golang-migrate/migrate/cmd/migrate
+}
+
 function launch_cockroachdb() {
   cockroach start-single-node --listen-addr="$DB_HOST" --http-addr=localhost:9000 --insecure --background
 }

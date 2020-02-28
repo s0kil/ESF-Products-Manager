@@ -2,6 +2,8 @@ package model
 
 import (
 	"upper.io/db.v3"
+
+	"github.com/s0kil/ESF-Products-Manager/fault"
 )
 
 type Product struct {
@@ -9,15 +11,13 @@ type Product struct {
 	Title string `db:"title" form:"title"`
 }
 
-func All(table db.Collection) []Product {
-	var products []Product
-
+func All(table db.Collection) (products []Product) {
 	err := table.Find().All(&products)
 	if err != nil {
-		// TODO: Handle Error
+		fault.Report(err, "Could Not Get Products")
 	}
 
-	return products
+	return
 }
 
 func (p Product) New(table db.Collection) error {
