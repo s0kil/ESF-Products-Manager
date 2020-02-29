@@ -9,6 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gofiber/fiber v1.8.0
 	github.com/joho/godotenv v1.3.0
+	github.com/json-iterator/go v1.1.9
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.3.0
