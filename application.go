@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 
-	"github.com/CloudyKit/jet"    // Template Engine
 	"github.com/gofiber/fiber"    // Web Framework
 	"github.com/joho/godotenv"    // Load ENV Variables
 	"github.com/json-iterator/go" // JSON Serialize, Deserialize
@@ -66,36 +64,9 @@ func main() {
 	})
 
 	// Product Create
-	productEndPoint.Get("/new", func(c *fiber.Ctx) {
-		// TODO
-		c.Send("TODO")
-	})
-
-	// Product Create
 	productEndPoint.Post("/new", func(c *fiber.Ctx) {
-		// Parse Form
-		var product model.Product
-		err := c.BodyParser(&product)
-		fault.Report(err, "Failed To Parse Form Body")
-
-		err = product.New(productsTable)
-		fault.Report(err, "Failed To Insert Product Into Database")
-
-		// TODO: Info Flash With Status (Success, Failure)
-		c.Redirect("/product/new")
 	})
 
 	err = App.Listen(ApplicationPort)
 	fault.Report(err, "Failed To Start Server")
-}
-
-func renderView(views *jet.Set, templateName string) *bytes.Buffer {
-	template, err := views.GetTemplate(templateName)
-	fault.Report(err, fmt.Sprintf("Failed To Get %s Template", templateName))
-
-	var writer bytes.Buffer
-	err = template.Execute(&writer, nil, nil)
-	fault.Report(err, fmt.Sprintf("Error When Executing %s Template", templateName))
-
-	return &writer
 }
