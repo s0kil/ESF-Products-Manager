@@ -1,5 +1,0 @@
-{{extends "layouts/application.jet"}}
-
-{{block body()}}
-    <h1 class="gray">Home Page</h1>
-{{end}}

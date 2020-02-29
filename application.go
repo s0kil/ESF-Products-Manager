@@ -4,83 +4,89 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"strconv"
 
-	"github.com/CloudyKit/jet"
-	"github.com/gofiber/fiber"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
-	"upper.io/db.v3/postgresql"
+	"github.com/CloudyKit/jet"    // Template Engine
+	"github.com/gofiber/fiber"    // Web Framework
+	"github.com/joho/godotenv"    // Load ENV Variables
+	"github.com/json-iterator/go" // JSON Serialize, Deserialize
+	"upper.io/db.v3/postgresql"   // Database Access Layer
 
 	"github.com/s0kil/ESF-Products-Manager/fault"
 	"github.com/s0kil/ESF-Products-Manager/model"
-	"github.com/s0kil/ESF-Products-Manager/view"
 )
 
 func init() {
-	// Load Environment Variables From .env File
 	err := godotenv.Load()
 	fault.Report(err, "Failed To Load .env File")
 }
 
 func main() {
 	var (
-		DbHost   = os.Getenv("DB_HOST")
-		DbName   = os.Getenv("DB_NAME")
-		DbUser   = os.Getenv("DB_USER")
-		DbSource = fmt.Sprintf("postgres://%s@%s/%s?sslmode=disable", DbUser, DbHost, DbName)
+		DatabaseHost   = os.Getenv("DATABASE_HOST")
+		DatabaseName   = os.Getenv("DATABASE_NAME")
+		DatabaseUser   = os.Getenv("DATABASE_USER")
+		DatabaseSource = fmt.Sprintf("postgres://%s@%s/%s?sslmode=disable",
+			DatabaseUser, DatabaseHost, DatabaseName)
 
-		AppProductionMode, _ = strconv.ParseBool(os.Getenv("APP_PRODUCTION_MODE"))
+		ApplicationPort = os.Getenv("APPLICATION_PORT")
+
+		json = jsoniter.ConfigCompatibleWithStandardLibrary
 	)
 
-	DBConnectionURL, err := postgresql.ParseURL(DbSource)
-	fault.Report(err, "Failed To Parse DBSource")
+	DatabaseConnectionURL, err := postgresql.ParseURL(DatabaseSource)
+	fault.Report(err, "Failed To Parse DatabaseSource")
 
-	Database, err := postgresql.Open(DBConnectionURL)
-	fault.Report(err, "Failed To Open DB Session")
+	Database, err := postgresql.Open(DatabaseConnectionURL)
+	fault.Report(err, "Failed To Open Database Session")
 	defer Database.Close()
 
 	productsTable := Database.Collection("products")
 
-	Views := jet.NewHTMLSet("./view")
-	Views.SetDevelopmentMode(!AppProductionMode)
-
 	App := fiber.New()
-	App.Use(func(c *fiber.Ctx) {
-		c.Set("Content-Type", "text/html")
-		c.Next()
-	})
-
+	// Load Editor
 	App.Get("/", func(c *fiber.Ctx) {
-		c.Send(renderView(Views, "home.jet"))
+		c.Redirect("/index.html")
 	})
+	App.Static("/", "./Editor/public")
 
 	// Product
 	productEndPoint := App.Group("/product")
+	productEndPoint.Use(func(c *fiber.Ctx) {
+		c.Set("Content-Type", "application/json")
+		c.Next()
+	})
+
 	// Product List All
 	productEndPoint.Get("/", func(ctx *fiber.Ctx) {
-		result := view.ProductIndex(Views, model.All(productsTable))
-		ctx.Send(&result)
+		data := model.All(productsTable)
+		result, err := json.Marshal(data)
+		fault.Report(err, "Failed To Serialize Data")
+
+		ctx.Send(result)
 	})
+
 	// Product Create
 	productEndPoint.Get("/new", func(c *fiber.Ctx) {
-		c.Send(renderView(Views, "product/new.jet"))
+		// TODO
+		c.Send("TODO")
 	})
+
+	// Product Create
 	productEndPoint.Post("/new", func(c *fiber.Ctx) {
 		// Parse Form
 		var product model.Product
-		e := c.BodyParser(&product)
-		fault.Report(e, "Failed To Parse Form Body")
+		err := c.BodyParser(&product)
+		fault.Report(err, "Failed To Parse Form Body")
 
-		err := product.New(productsTable)
-		fault.Report(err, "Failed To Insert Product Into DB")
+		err = product.New(productsTable)
+		fault.Report(err, "Failed To Insert Product Into Database")
 
 		// TODO: Info Flash With Status (Success, Failure)
 		c.Redirect("/product/new")
 	})
 
-	e := App.Listen(os.Getenv("APP_PORT"))
-	fault.Report(e, "Failed To Start Server")
+	err = App.Listen(ApplicationPort)
+	fault.Report(err, "Failed To Start Server")
 }
 
 func renderView(views *jet.Set, templateName string) *bytes.Buffer {

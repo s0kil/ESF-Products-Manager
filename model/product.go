@@ -7,8 +7,8 @@ import (
 )
 
 type Product struct {
-	ID    uint   `db:"id,omitempty"`
-	Title string `db:"title" form:"title"`
+	id    uint   `db:"id,omitempty"`
+	Title string `db:"title" json:"title"`
 }
 
 func All(table db.Collection) (products []Product) {

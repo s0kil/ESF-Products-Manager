@@ -1,0 +1,24 @@
+{
+  "name": "esf-products-manager-editor",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "sirv public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@suddenly/api": "^1.2.0",
+    "loadjs": "^4.2.0",
+    "rollup": "^1.32.0",
+    "rollup-plugin-livereload": "^1.0.4",
+    "rollup-plugin-svelte": "^5.1.1",
+    "rollup-plugin-terser": "^5.2.0",
+    "svelte": "^3.19.1",
+    "x-data-spreadsheet": "^1.0.29"
+  },
+  "dependencies": {
+    "sirv-cli": "^0.4.5"
+  }
+}
