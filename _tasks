@@ -12,17 +12,17 @@ function launch_setup() {
 }
 
 function launch_cockroachdb() {
-  cockroach start-single-node --listen-addr="$DB_HOST" --http-addr=localhost:9000 --insecure --background
+  cockroach start-single-node --listen-addr="$DATABASE_HOST" --http-addr=localhost:9000 --insecure --background
 }
 
 function do_migrate() {
   user_params=$*
-  COCKROACHDB_URL="cockroachdb://$DB_USER:@$DB_HOST/$DB_NAME?sslmode=disable"
+  COCKROACH_URL="cockroachdb://$DATABASE_USER:@$DATABASE_HOST/$DATABASE_NAME?sslmode=disable"
 
-  migrate -verbose -database "${COCKROACHDB_URL}" -path database/migrations "$user_params"
+  migrate -verbose -database "${COCKROACH_URL}" -path database/migrations "$user_params"
 
   # Dump Database Schema (*DO NOT EDIT THE database/schema.sql FILE*)
-  cockroach dump "$DB_NAME" --insecure &>database/schema.sql
+  cockroach dump "$DATABASE_NAME" --insecure &>database/schema.sql
 }
 
 function run() {

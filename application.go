@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gofiber/fiber"    // Web Framework
-	"github.com/joho/godotenv"    // Load ENV Variables
-	"github.com/json-iterator/go" // JSON Serialize, Deserialize
-	"upper.io/db.v3/postgresql"   // Database Access Layer
+	"github.com/gofiber/fiber"             // Web Framework
+	"github.com/joho/godotenv"             // Load ENV Variables
+	jsoniter "github.com/json-iterator/go" // JSON Serialize, Deserialize
+	"upper.io/db.v3/postgresql"            // Database Access Layer
 
 	"github.com/s0kil/ESF-Products-Manager/fault"
 	"github.com/s0kil/ESF-Products-Manager/model"
