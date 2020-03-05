@@ -20,7 +20,7 @@ func All(table db.Collection) (products []Product) {
 	return
 }
 
-func (p Product) New(table db.Collection) error {
-	_, err := table.Insert(p)
-	return err
+func (p Product) New(table db.Collection) (err error) {
+	_, err = table.Insert(p)
+	return
 }

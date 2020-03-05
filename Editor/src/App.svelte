@@ -28,6 +28,17 @@
   });
 
   function Main(products) {
+    const spreadSheetColumns = [
+      {
+        type: "text",
+        title: "Title"
+      }
+    ];
+
+    renderSheet(spreadSheetColumns, products);
+  }
+
+  function renderSheet(columns, data) {
     let container = document.getElementById("spreadsheet");
     let containerStyles = getComputedStyle(container);
     let containerSize = {
@@ -36,27 +47,21 @@
       height: screen.height - 200
     };
 
-    const spreadSheetColumns = [
-      {
-        type: "text",
-        title: "Title"
-      }
-    ];
-
-    const spreadSheet = jexcel(container, {
-      data: products,
+    return jexcel(container, {
+      data: data,
       defaultColWidth: 100,
       tableOverflow: true,
       tableWidth: `${containerSize.width}px`,
       tableHeight: `${containerSize.height}px`,
-      columns: spreadSheetColumns,
+      columns: columns,
       locked: true
     });
   }
 
   $: spreadSheetState = {
     locked: false,
-    sheets: ["products"]
+    sheets: ["products"],
+    activeSheet: "products"
   };
 
   const Icon = iconName =>
@@ -76,9 +81,6 @@
 
   header h1 {
     letter-spacing: 2px;
-  }
-
-  #spreadsheet {
   }
 
   .naive-lock {
@@ -152,4 +154,5 @@
       {/each}
     </div>
   </nav>
+
 </main>

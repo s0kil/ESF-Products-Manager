@@ -3,7 +3,7 @@ module github.com/s0kil/ESF-Products-Manager
 go 1.14
 
 require (
-	github.com/gofiber/fiber v1.8.1
+	github.com/gofiber/fiber v1.8.2
 	github.com/joho/godotenv v1.3.0
 	github.com/json-iterator/go v1.1.9
 	github.com/klauspost/compress v1.10.2 // indirect
